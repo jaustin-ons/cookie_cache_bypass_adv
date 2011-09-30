@@ -11,6 +11,10 @@
  */
 function cookie_cache_bypass_adv_form_alter(&$form, $form_state, $form_id) {
 
+  if (drupal_is_cli()) {
+    return;
+  }
+  
   // Add our settings to the Drupal performance form
   if ($form_id == 'system_performance_settings') {
     $form['caching']['cookie_cache_bypass_adv_cache_lifetime'] = array(
