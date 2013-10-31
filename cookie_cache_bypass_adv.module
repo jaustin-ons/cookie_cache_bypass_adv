@@ -39,27 +39,29 @@ function cookie_cache_bypass_adv_form_alter(&$form, $form_state, $form_id) {
     );
   }
 
-  // When should we set our cookie? Before validation is perfered
-  $cookie_set = variable_get('cookie_cache_bypass_adv_set_time', 'before_validate');
-  if ($cookie_set == 'before_validate') {
-    $form['#validate'][-1000] = 'cookie_cache_bypass_adv_setcookie';
-    ksort($form['#validate']);
-    reset($form['#validate']);
-  } else
-  if ($cookie_set == 'after_validate') {
-    $form['#validate'][1000] = 'cookie_cache_bypass_adv_setcookie';
-    ksort($form['#validate']);
-    reset($form['#validate']);
-  } else
-  if ($cookie_set == 'before_submit') {
-    $form['#submit'][-1000] = 'cookie_cache_bypass_adv_setcookie';
-    ksort($form['#submit']);
-    reset($form['#submit']);
-  } else
-  if ($cookie_set == 'after_submit') {
-    $form['#submit'][1000] = 'cookie_cache_bypass_adv_setcookie';
-    ksort($form['#submit']);
-    reset($form['#submit']);
+  if (drupal_strtolower($form['#method']) == 'post') {
+    // When should we set our cookie? Before validation is perfered
+    $cookie_set = variable_get('cookie_cache_bypass_adv_set_time', 'before_validate');
+    if ($cookie_set == 'before_validate') {
+      $form['#validate'][-1000] = 'cookie_cache_bypass_adv_setcookie';
+      ksort($form['#validate']);
+      reset($form['#validate']);
+    } else
+    if ($cookie_set == 'after_validate') {
+      $form['#validate'][1000] = 'cookie_cache_bypass_adv_setcookie';
+      ksort($form['#validate']);
+      reset($form['#validate']);
+    } else
+    if ($cookie_set == 'before_submit') {
+      $form['#submit'][-1000] = 'cookie_cache_bypass_adv_setcookie';
+      ksort($form['#submit']);
+      reset($form['#submit']);
+    } else
+    if ($cookie_set == 'after_submit') {
+      $form['#submit'][1000] = 'cookie_cache_bypass_adv_setcookie';
+      ksort($form['#submit']);
+      reset($form['#submit']);
+    }
   }
 
 }
@@ -79,4 +81,23 @@ function cookie_cache_bypass_adv_setcookie() {
     $set_cookie_path = request_uri().'/';
   }
   setcookie('NO_CACHE', 'Y', $_SERVER['REQUEST_TIME'] + $lifetime , $set_cookie_path, $cookie_domain);
+}
+
+/**
+ * Implements hook_init().
+ *
+ * Get rid of the NO_CACHE cookie if there are no drupal_set_messages.
+ */
+function cookie_cache_bypass_adv_init() {
+  if (!drupal_set_message()) {
+    global $cookie_domain;
+    $lifetime = variable_get('cookie_cache_bypass_adv_cache_lifetime', 300);
+    $cookie_path = variable_get('cookie_cache_bypass_adv_cookie_path', 'entire_site');
+    if ($cookie_path == 'entire_site') {
+      $set_cookie_path = '/';
+    } else {
+      $set_cookie_path = request_uri().'/';
+    }
+    setcookie('NO_CACHE', 'Y', $_SERVER['REQUEST_TIME'] - $lifetime , $set_cookie_path, $cookie_domain);
+  }
 }
