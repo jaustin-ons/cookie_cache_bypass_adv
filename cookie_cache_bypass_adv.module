@@ -89,7 +89,7 @@ function cookie_cache_bypass_adv_setcookie() {
  * Get rid of the NO_CACHE cookie if there are no drupal_set_messages.
  */
 function cookie_cache_bypass_adv_init() {
-  if (!drupal_set_message() && !empty($_COOKIE['NO_CACHE'])) {
+  if (!drupal_set_message() && !empty($_COOKIE['NO_CACHE']) && arg(0) != 'login') {
     global $cookie_domain;
     $lifetime = variable_get('cookie_cache_bypass_adv_cache_lifetime', 300);
     $cookie_path = variable_get('cookie_cache_bypass_adv_cookie_path', 'entire_site');
